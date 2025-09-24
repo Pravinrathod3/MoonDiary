@@ -1,14 +1,14 @@
 import { Feather } from '@expo/vector-icons';
+import { Link } from 'expo-router';
 import React from 'react';
 import {
-    ScrollView,
-    StatusBar,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface MoodButtonProps {
   emoji: string;
@@ -36,20 +36,19 @@ const SectionCard: React.FC<SectionCardProps> = ({ children, className = '' }) =
 );
 
 const HomeScreen: React.FC = () => {
+
+
   const handleMoodSelect = (mood: string) => {
     console.log(`Selected mood: ${mood}`);
   };
 
-  const handleJournalPress = () => {
-    console.log('Open journal');
-  };
 
   const handleSupportPress = () => {
     console.log('Open support');
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <View className="flex-1 bg-background">
       <StatusBar barStyle="dark-content" backgroundColor="#FAFAFA" />
       
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
@@ -85,12 +84,12 @@ const HomeScreen: React.FC = () => {
               <Text className="text-lg font-semibold text-textPrimary">Quick Journal</Text>
               <Text className="text-textSecondary mt-1">Start writing or speaking</Text>
             </View>
-            <TouchableOpacity
-              className="w-10 h-10 bg-primary rounded-full items-center justify-center"
-              onPress={handleJournalPress}
+            <Link href="/(tabs)/home/new"
+              className="w-10 h-10 bg-primary rounded-full items-center justify-center pt-1.5 pl-1.5"
+                
             >
               <Feather name="plus" size={20} color="white" />
-            </TouchableOpacity>
+            </Link>
           </View>
           
           <View className="flex-row space-x-3">
@@ -144,7 +143,7 @@ const HomeScreen: React.FC = () => {
       </ScrollView>
 
       
-    </SafeAreaView>
+    </View>
   );
 };
 
