@@ -8,6 +8,11 @@ type Message = {
   sender: 'user' | 'bot';
 };
 
+interface QuickActionButtonProps {
+    title: string;
+    onPress: () => void;
+}
+
 const InitialMessage: Message = {
   id: '1',
   text: "Hi there! How can I help you today?",
@@ -124,7 +129,7 @@ Always respond in a way that makes the person feel heard, respected, and support
     }
   }, [messages]);
 
-  const QuickActionButton = ({ title, onPress }) => (
+  const QuickActionButton: React.FC<QuickActionButtonProps> = ({ title, onPress }) => (
     <TouchableOpacity 
       className="bg-white border border-gray-300 rounded-full px-4 py-2 mr-2 mb-2"
       onPress={onPress}
@@ -182,7 +187,7 @@ Always respond in a way that makes the person feel heard, respected, and support
           )}
         </View>
 
-        {/* Quick Actions */}
+        {/* Quick Actions
         <View className="px-4 py-3 border-t border-gray-200 bg-white">
           <Text className="text-sm font-medium text-gray-700 mb-2">Quick Help</Text>
           <View className="flex-row flex-wrap">
@@ -215,7 +220,7 @@ Always respond in a way that makes the person feel heard, respected, and support
               }}
             />
           </View>
-        </View>
+        </View> */}
       </View>
 
       {/* Input Area - Fixed at bottom with keyboard offset */}
