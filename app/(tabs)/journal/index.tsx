@@ -3,14 +3,14 @@ import * as Application from 'expo-application';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Platform,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { supabase } from '../../../services/supabase';
 
@@ -35,21 +35,14 @@ interface CalendarDay {
   date: Date;
 }
 
-interface StreakData {
-  current_streak: number;
-  longest_streak: number;
-  last_entry_date: string;
-  total_entries: number;
-}
-
 const JournalApp: React.FC = () => {
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(today.getDate());
   const [searchQuery, setSearchQuery] = useState('');
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [filteredEntries, setFilteredEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [streakData, setStreakData] = useState<StreakData | null>(null);
   const [deviceId, setDeviceId] = useState<string>('');
 
   const router = useRouter();
@@ -63,7 +56,6 @@ const JournalApp: React.FC = () => {
   useEffect(() => {
     if (deviceId) {
       fetchJournalEntries();
-      fetchStreakData();
     }
   }, [currentDate, deviceId]);
 
@@ -86,20 +78,22 @@ const JournalApp: React.FC = () => {
   const fetchJournalEntries = async () => {
     try {
       setLoading(true);
-      
+
       const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
       const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-      
+
       const { data, error } = await supabase
         .from('journals')
-        .select('*')
+        .select('*') // Add device_id filter if you have this column
         .gte('date', startDate.toISOString().split('T')[0])
         .lte('date', endDate.toISOString().split('T')[0])
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      setJournalEntries(data || []);
+      const entries = data || [];
+      setJournalEntries(entries);
+      setFilteredEntries(entries);
     } catch (error) {
       console.error('Error fetching journal entries:', error);
       Alert.alert('Error', 'Failed to load journal entries');
@@ -108,91 +102,31 @@ const JournalApp: React.FC = () => {
     }
   };
 
-  // Fetch streak data
-  const fetchStreakData = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('user_streaks')
-        .select('*')
-        .eq('device_id', deviceId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-        throw error;
-      }
-
-      setStreakData(data || {
-        current_streak: 0,
-        longest_streak: 0,
-        last_entry_date: null,
-        total_entries: 0
-      });
-    } catch (error) {
-      console.error('Error fetching streak data:', error);
-    }
-  };
-
   // Create a new journal entry
   const createJournalEntry = () => {
     router.push('/(tabs)/home/new');
   };
 
-  // Delete a journal entry
-  const deleteJournalEntry = async (entryId: number) => {
-    try {
-      const { error } = await supabase
-        .from('journals')
-        .delete()
-        .eq('id', entryId);
-
-      if (error) throw error;
-
-      Alert.alert('Success', 'Journal entry deleted');
-      fetchJournalEntries();
-      fetchStreakData();
-    } catch (error) {
-      console.error('Error deleting journal entry:', error);
-      Alert.alert('Error', 'Failed to delete journal entry');
-    }
-  };
-
   // Search journal entries
   const searchEntries = async (query: string) => {
     if (!query.trim()) {
-      fetchJournalEntries();
+      setFilteredEntries(journalEntries);
       return;
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('journals')
-        .select('*')
-        .or(`text.ilike.%${query}%,feeling.ilike.%${query}%`)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      setJournalEntries(data || []);
-    } catch (error) {
-      console.error('Error searching entries:', error);
-    }
+    const filtered = journalEntries.filter(entry =>
+      entry.text.toLowerCase().includes(query.toLowerCase()) ||
+      entry.feeling.toLowerCase().includes(query.toLowerCase()) ||
+      (entry.summary && entry.summary.toLowerCase().includes(query.toLowerCase()))
+    );
+    
+    setFilteredEntries(filtered);
   };
 
   // Filter by feeling/mood
   const filterByFeeling = async (feeling: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('journals')
-        .select('*')
-        .eq('feeling', feeling)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      setJournalEntries(data || []);
-    } catch (error) {
-      console.error('Error filtering by feeling:', error);
-    }
+    const filtered = journalEntries.filter(entry => entry.feeling === feeling);
+    setFilteredEntries(filtered);
   };
 
   // Generate calendar days for current month
@@ -200,15 +134,15 @@ const JournalApp: React.FC = () => {
     const days: CalendarDay[] = [];
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    
+
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
     const firstDayWeekday = firstDayOfMonth.getDay();
     const daysInMonth = lastDayOfMonth.getDate();
-    
+
     const prevMonth = new Date(year, month - 1, 0);
     const daysInPrevMonth = prevMonth.getDate();
-    
+
     // Add days from previous month
     for (let i = firstDayWeekday - 1; i >= 0; i--) {
       const day = daysInPrevMonth - i;
@@ -221,15 +155,16 @@ const JournalApp: React.FC = () => {
         date
       });
     }
-    
+
     // Add current month days
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
       const isToday = date.toDateString() === today.toDateString();
-      const isSelected = day === selectedDate && 
-                        month === currentDate.getMonth() && 
-                        year === currentDate.getFullYear();
-      
+      const isSelected =
+        day === selectedDate &&
+        month === currentDate.getMonth() &&
+        year === currentDate.getFullYear();
+
       days.push({
         day,
         isCurrentMonth: true,
@@ -238,7 +173,7 @@ const JournalApp: React.FC = () => {
         date
       });
     }
-    
+
     // Add days from next month to complete the grid
     const totalCells = Math.ceil(days.length / 7) * 7;
     let nextMonthDay = 1;
@@ -253,7 +188,7 @@ const JournalApp: React.FC = () => {
       });
       nextMonthDay++;
     }
-    
+
     return days;
   };
 
@@ -263,6 +198,10 @@ const JournalApp: React.FC = () => {
   const handleDateSelect = (day: number, isCurrentMonth: boolean, date: Date) => {
     if (isCurrentMonth) {
       setSelectedDate(day);
+      // Filter entries for selected date
+      const selectedDateStr = date.toISOString().split('T')[0];
+      const filteredByDate = journalEntries.filter(entry => entry.date === selectedDateStr);
+      setFilteredEntries(filteredByDate);
     } else {
       setCurrentDate(new Date(date.getFullYear(), date.getMonth(), 1));
       setSelectedDate(day);
@@ -277,6 +216,7 @@ const JournalApp: React.FC = () => {
       newDate.setMonth(newDate.getMonth() + 1);
     }
     setCurrentDate(newDate);
+    setSelectedDate(1);
   };
 
   const monthNames = [
@@ -287,16 +227,16 @@ const JournalApp: React.FC = () => {
   // Get feeling emoji
   const getFeelingEmoji = (feeling: string) => {
     const feelingMap: { [key: string]: string } = {
-      'sad': '😢',
-      'neutral': '😐',
-      'happy': '😊',
-      'excited': '😃',
-      'excellent': '🤩',
-      'anxious': '😰',
-      'angry': '😠',
-      'grateful': '🙏',
-      'tired': '😴',
-      'peaceful': '😌'
+      sad: '😢',
+      neutral: '😐',
+      happy: '😊',
+      excited: '😃',
+      excellent: '🤩',
+      anxious: '😰',
+      angry: '😠',
+      grateful: '🙏',
+      tired: '😴',
+      peaceful: '😌'
     };
     return feelingMap[feeling] || '📝';
   };
@@ -305,34 +245,32 @@ const JournalApp: React.FC = () => {
   const formatJournalDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
-      month: 'long',
+      month: 'short',
       day: 'numeric',
       year: 'numeric'
     });
   };
 
+  // Handle journal card press
+  const handleJournalCardPress = (entryId: number) => {
+    console.log("");
+  };
+
   return (
     <View className="flex-1 bg-background">
-      {/* Header with Streak Info */}
+      {/* Header */}
       <View className="flex-row items-center justify-between px-6 py-4 bg-white">
-        <View>
-          <Text className="text-xl font-semibold text-textPrimary">Journal</Text>
-          {streakData && (
-            <Text className="text-sm text-textSecondary">
-              🔥 {streakData.current_streak} day streak • {streakData.total_entries} entries
-            </Text>
-          )}
-        </View>
-        <TouchableOpacity>
+        <Text className="text-xl font-semibold text-textPrimary">Journal</Text>
+        <TouchableOpacity onPress={() => setSearchQuery('')}>
           <Ionicons name="search" size={24} color="#777777" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1">
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Search and Filters */}
         <View className="px-6 py-4 bg-white border-b border-gray-100">
           <View className="flex-row items-center bg-gray-50 rounded-xl px-4 py-3 mb-4">
-            <Ionicons name="search" size={20} color="#777777" className="mr-3" />
+            <Ionicons name="search" size={20} color="#777777" />
             <TextInput
               placeholder="Search entries..."
               value={searchQuery}
@@ -343,10 +281,24 @@ const JournalApp: React.FC = () => {
               className="flex-1 text-textPrimary ml-3"
               placeholderTextColor="#777777"
             />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity
+                onPress={() => {
+                  setSearchQuery('');
+                  setFilteredEntries(journalEntries);
+                }}
+              >
+                <Ionicons name="close-circle" size={20} color="#777777" />
+              </TouchableOpacity>
+            )}
           </View>
 
-          <View className="flex-row space-x-3">
-            <TouchableOpacity 
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="flex-row space-x-3"
+          >
+            <TouchableOpacity
               className="flex-row items-center bg-primary/10 px-4 py-2 rounded-full"
               onPress={() => {
                 Alert.alert(
@@ -359,8 +311,10 @@ const JournalApp: React.FC = () => {
                     { text: '😃 Excited', onPress: () => filterByFeeling('excited') },
                     { text: '🤩 Excellent', onPress: () => filterByFeeling('excellent') },
                     { text: '😰 Anxious', onPress: () => filterByFeeling('anxious') },
-                    { text: 'Clear Filter', onPress: () => fetchJournalEntries(), style: 'destructive' },
-                    { text: 'Cancel', style: 'cancel' },
+                    { text: '😠 Angry', onPress: () => filterByFeeling('angry') },
+                    { text: '🙏 Grateful', onPress: () => filterByFeeling('grateful') },
+                    { text: 'Clear Filter', onPress: () => setFilteredEntries(journalEntries), style: 'destructive' },
+                    { text: 'Cancel', style: 'cancel' }
                   ]
                 );
               }}
@@ -368,14 +322,37 @@ const JournalApp: React.FC = () => {
               <Text className="text-primary font-medium mr-2">Feeling</Text>
               <Ionicons name="chevron-down" size={16} color="#4A90E2" />
             </TouchableOpacity>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               className="flex-row items-center bg-gray-100 px-4 py-2 rounded-full"
-              onPress={() => fetchJournalEntries()}
+              onPress={() => setFilteredEntries(journalEntries)}
             >
-              <Text className="text-textSecondary font-medium mr-2">Show All</Text>
+              <Text className="text-textSecondary font-medium">Show All</Text>
             </TouchableOpacity>
-          </View>
+
+            <TouchableOpacity
+              className="flex-row items-center bg-green-50 px-4 py-2 rounded-full"
+              onPress={() => {
+                const todayStr = new Date().toISOString().split('T')[0];
+                const todayEntries = journalEntries.filter(entry => entry.date === todayStr);
+                setFilteredEntries(todayEntries);
+              }}
+            >
+              <Text className="text-green-600 font-medium">Today</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="flex-row items-center bg-blue-50 px-4 py-2 rounded-full"
+              onPress={() => {
+                const sortedByConfidence = [...filteredEntries].sort(
+                  (a, b) => b.confidence_score - a.confidence_score
+                );
+                setFilteredEntries(sortedByConfidence);
+              }}
+            >
+              <Text className="text-blue-600 font-medium">High Confidence</Text>
+            </TouchableOpacity>
+          </ScrollView>
         </View>
 
         {/* Calendar */}
@@ -403,37 +380,53 @@ const JournalApp: React.FC = () => {
 
           {/* Calendar Grid */}
           <View className="flex-row flex-wrap">
-            {calendarDays.map((calendarDay, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => handleDateSelect(calendarDay.day, calendarDay.isCurrentMonth, calendarDay.date)}
-                className="w-10 h-10 items-center justify-center m-1"
-              >
-                <View
-                  className={`w-8 h-8 items-center justify-center rounded-full ${
-                    calendarDay.isSelected
-                      ? 'bg-primary'
-                      : calendarDay.isToday
-                      ? 'bg-primary/20'
-                      : ''
-                  }`}
+            {calendarDays.map((calendarDay, index) => {
+              const hasEntry = journalEntries.some(entry => {
+                const entryDate = new Date(entry.date);
+                return (
+                  entryDate.getDate() === calendarDay.day &&
+                  entryDate.getMonth() === currentDate.getMonth() &&
+                  entryDate.getFullYear() === currentDate.getFullYear()
+                );
+              });
+
+              return (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() =>
+                    handleDateSelect(calendarDay.day, calendarDay.isCurrentMonth, calendarDay.date)
+                  }
+                  className="w-10 h-10 items-center justify-center m-1"
                 >
-                  <Text
-                    className={`text-sm font-medium ${
+                  <View
+                    className={`w-8 h-8 items-center justify-center rounded-full ${
                       calendarDay.isSelected
-                        ? 'text-white'
+                        ? 'bg-primary'
                         : calendarDay.isToday
-                        ? 'text-primary font-semibold'
-                        : calendarDay.isCurrentMonth
-                        ? 'text-textPrimary'
-                        : 'text-textSecondary/50'
+                        ? 'bg-primary/20'
+                        : ''
                     }`}
                   >
-                    {calendarDay.day}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+                    <Text
+                      className={`text-sm font-medium ${
+                        calendarDay.isSelected
+                          ? 'text-white'
+                          : calendarDay.isToday
+                          ? 'text-primary font-semibold'
+                          : calendarDay.isCurrentMonth
+                          ? 'text-textPrimary'
+                          : 'text-textSecondary/50'
+                      }`}
+                    >
+                      {calendarDay.day}
+                    </Text>
+                    {hasEntry && calendarDay.isCurrentMonth && (
+                      <View className="w-1 h-1 bg-primary rounded-full absolute bottom-1" />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
@@ -441,62 +434,76 @@ const JournalApp: React.FC = () => {
         <View className="px-6 pb-6">
           <View className="flex-row justify-between items-center mb-4">
             <Text className="text-lg font-semibold text-textPrimary">
-              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+              {searchQuery
+                ? `Search results for "${searchQuery}"`
+                : `Journal Entries - ${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`}
             </Text>
             <Text className="text-textSecondary">
-              {journalEntries.length} entries
+              {filteredEntries.length} {filteredEntries.length === 1 ? 'entry' : 'entries'}
             </Text>
           </View>
-          
+
+          <TouchableOpacity onPress={fetchJournalEntries}>
+            <Ionicons name="refresh" size={24} color="#4A90E2" />
+          </TouchableOpacity>
+
           {loading ? (
-            <ActivityIndicator size="large" color="#4A90E2" />
-          ) : journalEntries.length === 0 ? (
+            <View className="bg-white rounded-2xl p-8 items-center justify-center">
+              <ActivityIndicator size="large" color="#4A90E2" />
+              <Text className="text-textSecondary mt-4">Loading journal entries...</Text>
+            </View>
+          ) : filteredEntries.length === 0 ? (
             <View className="bg-white rounded-2xl p-8 items-center justify-center">
               <Ionicons name="journal-outline" size={48} color="#777777" />
               <Text className="text-textSecondary text-lg mt-4 text-center">
-                No journal entries for this month{'\n'}
-                Start writing to see your entries here!
+                {searchQuery
+                  ? `No entries found for "${searchQuery}"`
+                  : 'No journal entries for this month'}
               </Text>
+              <Text className="text-textSecondary text-center mt-2">
+                {!searchQuery && 'Start writing to see your entries here!'}
+              </Text>
+              {!searchQuery && (
+                <TouchableOpacity
+                  className="bg-primary px-6 py-3 rounded-full mt-4"
+                  onPress={createJournalEntry}
+                >
+                  <Text className="text-white font-semibold">Write First Entry</Text>
+                </TouchableOpacity>
+              )}
             </View>
           ) : (
-            journalEntries.map((entry) => (
-              <TouchableOpacity
-                key={entry.id}
-                className="bg-white rounded-2xl p-4 mb-3 shadow-soft"
-                onPress={() => console.log(entry.id)}
-                onLongPress={() => {
-                  Alert.alert(
-                    'Delete Entry',
-                    'Are you sure you want to delete this entry?',
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      { text: 'Delete', style: 'destructive', onPress: () => deleteJournalEntry(entry.id) },
-                    ]
-                  );
-                }}
+            filteredEntries.map((entry) => (
+              <TouchableOpacity 
+                key={entry.id} 
+                className="bg-white rounded-2xl p-4 mb-3 shadow-soft active:opacity-95"
+                onPress={() => handleJournalCardPress(entry.id)}
               >
                 <View className="flex-row items-start">
-                  <View className="w-8 h-8 bg-primary/10 rounded-full items-center justify-center mr-3 mt-1">
+                  <View className="w-10 h-10 bg-primary/10 rounded-full items-center justify-center mr-3">
                     <Text className="text-lg">{getFeelingEmoji(entry.feeling)}</Text>
                   </View>
-                  
+
                   <View className="flex-1">
                     <View className="flex-row justify-between items-start mb-1">
                       <Text className="text-textPrimary font-semibold">
                         {formatJournalDate(entry.date)}
                       </Text>
-                      <Text className="text-textSecondary text-sm capitalize">
-                        {entry.feeling}
-                      </Text>
+                      <View className="flex-row items-center">
+                        <Text className="text-textSecondary text-sm capitalize mr-2">
+                          {entry.feeling}
+                        </Text>
+                        <Ionicons
+                          name="chevron-forward"
+                          size={16}
+                          color="#999999"
+                        />
+                      </View>
                     </View>
-                    <Text className="text-textSecondary leading-5" numberOfLines={3}>
-                      {entry.text.substring(0, 120)}...
+
+                    <Text className="text-textSecondary" numberOfLines={2}>
+                      {entry.summary || entry.text.slice(0, 100) + '...'}
                     </Text>
-                    {entry.confidence_score > 0 && (
-                      <Text className="text-xs text-textSecondary mt-1">
-                        Confidence: {entry.confidence_score}%
-                      </Text>
-                    )}
                   </View>
                 </View>
               </TouchableOpacity>
@@ -505,12 +512,12 @@ const JournalApp: React.FC = () => {
         </View>
       </ScrollView>
 
-      {/* Floating Action Button */}
-      <TouchableOpacity 
-        className="absolute bottom-6 right-6 w-14 h-14 bg-primary rounded-full items-center justify-center shadow-soft"
+      {/* New Entry Button */}
+      <TouchableOpacity
+        className="absolute bottom-6 right-6 bg-primary w-14 h-14 rounded-full items-center justify-center shadow-lg active:opacity-90"
         onPress={createJournalEntry}
       >
-        <Ionicons name="add" size={28} color="white" />
+        <Ionicons name="add" size={28} color="#fff" />
       </TouchableOpacity>
     </View>
   );

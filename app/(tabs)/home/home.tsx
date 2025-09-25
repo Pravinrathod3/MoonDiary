@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import React from 'react';
 import {
   ScrollView,
@@ -39,12 +39,12 @@ const HomeScreen: React.FC = () => {
 
 
   const handleMoodSelect = (mood: string) => {
-    console.log(`Selected mood: ${mood}`);
+    router.push(`/(tabs)/home/new`)
   };
 
 
   const handleSupportPress = () => {
-    console.log('Open support');
+    router.push('/(tabs)/support');
   };
 
   return (
@@ -56,7 +56,7 @@ const HomeScreen: React.FC = () => {
         <View className="flex-row justify-between items-center pt-4 pb-6">
           <View>
             <Text className="text-2xl font-bold text-textPrimary">Good Morning, Alex!</Text>
-            <Text className="text-textSecondary mt-1">Today, July 24</Text>
+            <Text className="text-textSecondary mt-1">Today, Sept 25</Text>
           </View>
           <TouchableOpacity className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-soft">
             <Feather name="settings" size={20} color="#777777" />
@@ -93,10 +93,7 @@ const HomeScreen: React.FC = () => {
           </View>
           
           <View className="flex-row space-x-3">
-            <TouchableOpacity className="flex-1 bg-background py-3 px-4 rounded-xl">
-              <Text className="text-primary font-medium text-center">Voice</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="flex-1 bg-background py-3 px-4 rounded-xl">
+            <TouchableOpacity className="flex-1 bg-background py-3 px-4 rounded-xl" onPress={() => router.push('/(tabs)/home/new')}>
               <Text className="text-primary font-medium text-center">Text</Text>
             </TouchableOpacity>
           </View>
@@ -120,7 +117,7 @@ const HomeScreen: React.FC = () => {
           <Text className="text-lg font-semibold text-textPrimary mb-1">Insights Preview</Text>
           <Text className="text-textSecondary mb-4">Recent mood trends</Text>
           
-          <TouchableOpacity className="bg-primary/10 py-3 px-4 rounded-xl">
+          <TouchableOpacity className="bg-primary/10 py-3 px-4 rounded-xl" onPress={() => router.push('/(tabs)/insights')}>
             <Text className="text-primary font-medium text-center">[Mini Sentiment Chart]</Text>
           </TouchableOpacity>
         </SectionCard>

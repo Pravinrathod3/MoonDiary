@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 interface Achievement {
@@ -24,8 +24,8 @@ interface UserStats {
 
 const ProfileScreen: React.FC = () => {
   const userStats: UserStats = {
-    entries: 45,
-    dayStreak: 15,
+    entries: 15,
+    dayStreak: 2,
   };
 
   const achievements: Achievement[] = [
@@ -107,7 +107,7 @@ const ProfileScreen: React.FC = () => {
 
           {/* User Info */}
           <Text className="text-2xl font-bold text-textPrimary mb-1">Sophia Carter</Text>
-          <Text className="text-textSecondary text-sm">Joined July 2023</Text>
+          <Text className="text-textSecondary text-sm">Joined September 24</Text>
         </View>
 
         {/* Stats Cards */}
