@@ -27,7 +27,7 @@ It helps users securely record their thoughts, reflect daily, and get smart insi
     <td><img src="./assets/images/entries.jpg" alt="Entries Screen" width="300"/></td>
   </tr>
   <tr>
-    <td><img src="./assets/images/insights.png" alt="AI Insights" width="300"/></td>
+    <td><img src="./assets/images/insights.jpg" alt="AI Insights" width="300"/></td>
     <td><img src="./assets/images/bot.jpg" alt="AI Bot" width="300"/></td>
   </tr>
 </table>
