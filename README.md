@@ -1,4 +1,50 @@
-# Welcome to your Expo app 👋
+# 🌙 MoonDiary
+
+**MoonDiary** is a modern, AI-powered and privacy-focused journaling app — built with **Expo**, **NativeWind**, and **Supabase**.  
+It helps users securely record their thoughts, reflect daily, and get smart insights powered by AI — all while keeping data safe and private.
+
+---
+
+## ✨ Features
+
+- 🧠 **AI Reflection Assistant** — Get personalized summaries and emotional insights.
+- 🔒 **Secure Storage** — Your journal is encrypted and safely stored using Supabase.
+- 🪶 **Minimal & Smooth UI** — Built with Expo + NativeWind for a fast, native experience.
+- ☁️ **Cloud Sync** — Access your journal anytime, anywhere.
+- 🌑 **Dark Mode Support** — Perfect for late-night reflections.
+
+---
+
+## 📱 Screenshots
+
+### 🏠 Home Screen
+![Home Screen](./assets/images/home.jpg)
+![Post Screen](./assets/images/post.jpg)
+
+### 🧾 Journal Entry
+![Journal Entry](./assets/images/journal.jpg)
+![Entries Screen](./assets/images/entries.jpg)
+
+### 🤖 AI Insights
+![AI Insights](./assets/images/insights.png)
+![AI Bot](./assets/images/bot.jpg)
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** Expo (React Native) + NativeWind  
+- **Backend:** Supabase (Authentication + Database)  
+- **AI:** OpenAI API Integration  
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/yourusername/moondiary.git
+cd moondiary
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
