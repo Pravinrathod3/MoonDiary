@@ -17,17 +17,20 @@ It helps users securely record their thoughts, reflect daily, and get smart insi
 
 ## 📱 Screenshots
 
-### 🏠 Home Screen
-<img src="./assets/images/home.jpg" alt="Home Screen" width="300"/>
-<img src="./assets/images/post.jpg" alt="Post Screen" width="300"/>
-
-### 🧾 Journal Entry
-<img src="./assets/images/journal.jpg" alt="Journal Entry" width="300"/>
-<img src="./assets/images/entries.jpg" alt="Entries Screen" width="300"/>
-
-### 🤖 AI Insights
-<img src="./assets/images/insights.png" alt="AI Insights" width="300"/>
-<img src="./assets/images/bot.jpg" alt="AI Bot" width="300"/>
+<table>
+  <tr>
+    <td><img src="./assets/images/home.jpg" alt="Home Screen" width="300"/></td>
+    <td><img src="./assets/images/post.jpg" alt="Post Screen" width="300"/></td>
+  </tr>
+  <tr>
+    <td><img src="./assets/images/journal.jpg" alt="Journal Entry" width="300"/></td>
+    <td><img src="./assets/images/entries.jpg" alt="Entries Screen" width="300"/></td>
+  </tr>
+  <tr>
+    <td><img src="./assets/images/insights.png" alt="AI Insights" width="300"/></td>
+    <td><img src="./assets/images/bot.jpg" alt="AI Bot" width="300"/></td>
+  </tr>
+</table>
 
 ---
 
