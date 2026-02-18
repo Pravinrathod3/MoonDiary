@@ -1,10 +1,100 @@
+import {
+    Nunito_400Regular,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+} from '@expo-google-fonts/nunito';
 import { Ionicons } from '@expo/vector-icons';
+import { useFonts } from 'expo-font';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import {
+    Animated,
+    Dimensions,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+const { width, height } = Dimensions.get('window');
+
+// ─── Palette ──────────────────────────────────────────────────────────────────
+const P = {
+    bg: '#FBF7FF',
+    card: '#FFFFFF',
+    pink: '#F472B6',
+    pinkLight: '#FDF2F8',
+    purple: '#A78BFA',
+    purpleLight: '#F5F3FF',
+    purpleMid: '#DDD6FE',
+    teal: '#5BB8A0',
+    tealLight: '#EDFAF5',
+    amber: '#FBBF24',
+    amberLight: '#FFFBEB',
+    text: '#2D1F3D',
+    textMid: '#7A6A8A',
+    textSoft: '#B8A8CC',
+};
+
+// ─── Ripple Background ────────────────────────────────────────────────────────
+function RippleBackground() {
+    const ripples = [
+        useRef(new Animated.Value(0)).current,
+        useRef(new Animated.Value(0)).current,
+    ];
+
+    useEffect(() => {
+        const animate = (anim: Animated.Value, startAt: number) => {
+            anim.setValue(startAt);
+            Animated.loop(
+                Animated.timing(anim, { toValue: 1, duration: 6500, useNativeDriver: true })
+            ).start();
+        };
+        ripples.forEach((r, i) => animate(r, i * 0.5));
+    }, []);
+
+    return (
+        <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+            {ripples.map((anim, i) => {
+                const scale = anim.interpolate({ inputRange: [0, 1], outputRange: [0.15, 3.5] });
+                const opacity = anim.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0.08, 0.03, 0] });
+                return (
+                    <Animated.View
+                        key={i}
+                        style={{
+                            position: 'absolute',
+                            width: width * 1,
+                            height: width * 1,
+                            borderRadius: width * 0.5,
+                            borderWidth: 2,
+                            borderColor: i === 0 ? P.purple : P.amber,
+                            top: height * 0.1,
+                            left: 0,
+                            transform: [{ scale }],
+                            opacity,
+                        }}
+                    />
+                );
+            })}
+        </View>
+    );
+}
 
 export default function StreakCalendarScreen() {
     const router = useRouter();
+
+    const [fontsLoaded] = useFonts({
+        Nunito_400Regular,
+        Nunito_600SemiBold,
+        Nunito_700Bold,
+        Nunito_800ExtraBold,
+    });
+
+    if (!fontsLoaded) return null;
 
     const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
     const dates = [
@@ -18,53 +108,209 @@ export default function StreakCalendarScreen() {
     ];
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
-            <View className="px-6 pt-4 pb-2 flex-row items-center border-b border-gray-100">
-                <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color="black" />
+        <SafeAreaView style={styles.safeArea}>
+            <StatusBar barStyle="dark-content" backgroundColor={P.bg} />
+            <RippleBackground />
+
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+                    <Ionicons name="chevron-back" size={24} color={P.text} />
                 </TouchableOpacity>
-                <Text className="text-xl font-bold ml-4">Streak Calendar 📅</Text>
+                <Text style={styles.headerTitle}>Streak Calendar</Text>
+                <View style={{ width: 44 }} />
             </View>
 
-            <ScrollView className="p-6">
-                <View className="bg-gray-50 p-8 rounded-[40px] mb-8 items-center">
-                    <Text className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-6 text-center">February 2026</Text>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+                <View style={styles.calendarCard}>
+                    <Text style={styles.monthLabel}>FEBRUARY 2026</Text>
 
-                    <View className="flex-row justify-between w-full mb-4 px-2">
+                    <View style={styles.daysRow}>
                         {days.map((day, i) => (
-                            <Text key={i} className="text-gray-400 font-bold text-xs">{day}</Text>
+                            <Text key={i} style={styles.dayInitial}>{day}</Text>
                         ))}
                     </View>
 
-                    <View className="flex-row justify-between w-full px-2">
+                    <View style={styles.datesRow}>
                         {dates.map((item, i) => (
-                            <View key={i} className="items-center">
-                                <View className={`w-10 h-10 rounded-full items-center justify-center mb-1 ${item.completed ? 'bg-emerald-500' : 'bg-rose-100 border border-rose-200'}`}>
-                                    {item.completed ? (
-                                        <Ionicons name="checkmark" size={20} color="white" />
-                                    ) : (
-                                        <Ionicons name="close" size={20} color="#e11d48" />
-                                    )}
+                            <View key={i} style={styles.dateItem}>
+                                <View style={[
+                                    styles.dateCircle,
+                                    { backgroundColor: item.completed ? P.teal : P.pinkLight }
+                                ]}>
+                                    <Ionicons
+                                        name={item.completed ? "checkmark" : "close"}
+                                        size={20}
+                                        color={item.completed ? "#FFF" : P.pink}
+                                    />
                                 </View>
-                                <Text className={`text-[10px] font-bold ${item.completed ? 'text-emerald-600' : 'text-rose-600'}`}>{item.day}</Text>
+                                <Text style={[
+                                    styles.dateText,
+                                    { color: item.completed ? P.teal : P.pink }
+                                ]}>{item.day}</Text>
                             </View>
                         ))}
                     </View>
                 </View>
 
-                <View className="bg-amber-50 p-6 rounded-[32px] border border-amber-100">
-                    <View className="flex-row items-center mb-4">
-                        <Ionicons name="trending-up" size={24} color="#d97706" />
-                        <Text className="text-amber-900 font-bold ml-2 text-lg">Consistency is Key!</Text>
+                <View style={styles.insightCard}>
+                    <View style={styles.insightHeader}>
+                        <View style={styles.insightIconBg}>
+                            <Ionicons name="trending-up" size={24} color={P.amber} />
+                        </View>
+                        <Text style={styles.insightTitle}>Consistency is Key!</Text>
                     </View>
-                    <Text className="text-amber-800 leading-relaxed mb-4">
+                    <Text style={styles.insightText}>
                         You've logged your mood for 6 out of the last 7 days. This helps our AI provide much more accurate insights for your wellbeing.
                     </Text>
-                    <TouchableOpacity className="bg-amber-500 py-3 rounded-2xl items-center">
-                        <Text className="text-white font-bold">Keep going! 🌿</Text>
+                    <TouchableOpacity style={styles.actionBtn}>
+                        <Text style={styles.actionBtnText}>Keep it up! 🌿</Text>
                     </TouchableOpacity>
                 </View>
+
+                <View style={{ height: 40 }} />
             </ScrollView>
         </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        backgroundColor: P.bg,
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 10,
+        paddingBottom: 20,
+    },
+    backBtn: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: P.card,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: P.purple,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 2,
+    },
+    headerTitle: {
+        fontFamily: 'Nunito_800ExtraBold',
+        fontSize: 18,
+        color: P.text,
+    },
+    scrollContent: {
+        paddingHorizontal: 20,
+    },
+    calendarCard: {
+        backgroundColor: P.card,
+        borderRadius: 36,
+        padding: 24,
+        alignItems: 'center',
+        shadowColor: P.purple,
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.08,
+        shadowRadius: 20,
+        elevation: 5,
+        borderWidth: 1,
+        borderColor: P.purpleMid + '33',
+        marginBottom: 30,
+    },
+    monthLabel: {
+        fontFamily: 'Nunito_800ExtraBold',
+        fontSize: 12,
+        color: P.textSoft,
+        letterSpacing: 2,
+        marginBottom: 24,
+    },
+    daysRow: {
+        flexDirection: 'row',
+        width: '100%',
+        justifyContent: 'space-between',
+        paddingHorizontal: 10,
+        marginBottom: 16,
+    },
+    dayInitial: {
+        fontFamily: 'Nunito_800ExtraBold',
+        fontSize: 12,
+        color: P.textMid,
+        width: 32,
+        textAlign: 'center',
+    },
+    datesRow: {
+        flexDirection: 'row',
+        width: '100%',
+        justifyContent: 'space-between',
+        paddingHorizontal: 10,
+    },
+    dateItem: {
+        alignItems: 'center',
+    },
+    dateCircle: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    dateText: {
+        fontFamily: 'Nunito_800ExtraBold',
+        fontSize: 12,
+    },
+    insightCard: {
+        backgroundColor: P.amberLight,
+        borderRadius: 32,
+        padding: 24,
+        borderWidth: 1,
+        borderColor: P.amber + '33',
+    },
+    insightHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+        gap: 12,
+    },
+    insightIconBg: {
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        backgroundColor: P.card,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    insightTitle: {
+        fontFamily: 'Nunito_800ExtraBold',
+        fontSize: 18,
+        color: P.text,
+    },
+    insightText: {
+        fontFamily: 'Nunito_600SemiBold',
+        fontSize: 15,
+        color: P.textMid,
+        lineHeight: 22,
+        marginBottom: 24,
+    },
+    actionBtn: {
+        backgroundColor: P.amber,
+        height: 54,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: P.amber,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 4,
+    },
+    actionBtnText: {
+        fontFamily: 'Nunito_800ExtraBold',
+        fontSize: 15,
+        color: '#FFF',
+    },
+});
