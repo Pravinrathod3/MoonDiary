@@ -8,19 +8,21 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: "#10b981", // Emerald 500 (Wellness theme)
-        tabBarInactiveTintColor: "#6b7280", // Gray 500
+        tabBarActiveTintColor: "#A78BFA", // New Theme Purple
+        tabBarInactiveTintColor: "#B8A8CC", // Soft Purple/Gray
         tabBarStyle: {
-          backgroundColor: "white",
-          borderTopWidth: 1,
-          borderTopColor: "#f3f4f6", // Gray 100
-          height: 65,
-          paddingBottom: 10,
-          paddingTop: 8,
+          backgroundColor: "#FBF7FF", // Matching Home BG
+          borderTopWidth: 1.5,
+          borderTopColor: "#DDD6FE33",
+          height: 70,
+          paddingBottom: 12,
+          paddingTop: 10,
+          elevation: 0,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "500",
+          fontFamily: "Nunito_700Bold",
+          fontSize: 11,
+          marginTop: 2,
         },
       }}
     >
