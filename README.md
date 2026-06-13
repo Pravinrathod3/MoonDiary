@@ -19,16 +19,16 @@ It helps users securely record their thoughts, reflect daily, and get smart insi
 
 <table>
   <tr>
-    <td><img src="./assets/images/home.jpg" alt="Home Screen" width="300"/></td>
-    <td><img src="./assets/images/post.jpg" alt="Post Screen" width="300"/></td>
+    <td><img src="./screenshot/home.jpg" alt="Home Screen" width="300"/></td>
+    <td><img src="./screenshot/Logs.jpg" alt="Post Screen" width="300"/></td>
   </tr>
   <tr>
-    <td><img src="./assets/images/journal.jpg" alt="Journal Entry" width="300"/></td>
-    <td><img src="./assets/images/entries.jpg" alt="Entries Screen" width="300"/></td>
+    <td><img src="./screenshot/Actions.jpg" alt="Journal Entry" width="300"/></td>
+    <td><img src="./screenshot/Wellness.jpg" alt="Entries Screen" width="300"/></td>
   </tr>
   <tr>
-    <td><img src="./assets/images/insights.jpg" alt="AI Insights" width="300"/></td>
-    <td><img src="./assets/images/bot.jpg" alt="AI Bot" width="300"/></td>
+    <td><img src="./screenshot/Tools.jpg" alt="AI Insights" width="300"/></td>
+    <td><img src="./screenshot/Trackers.jpg" alt="AI Bot" width="300"/></td>
   </tr>
 </table>
 
