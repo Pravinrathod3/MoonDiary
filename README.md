@@ -19,7 +19,7 @@ It helps users securely record their thoughts, reflect daily, and get smart insi
 
 <table>
   <tr>
-    <td><img src="./screenshot/home.jpg" alt="Home Screen" width="300"/></td>
+    <td><img src="./screenshot/Home.jpg" alt="Home Screen" width="300"/></td>
     <td><img src="./screenshot/Logs.jpg" alt="Post Screen" width="300"/></td>
   </tr>
   <tr>
